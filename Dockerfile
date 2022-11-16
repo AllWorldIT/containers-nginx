@@ -5,7 +5,7 @@ LABEL maintainer="Nigel Kukard <nkukard@LBSD.net>"
 
 RUN set -ex; \
 	true "Nginx"; \
-	apk add --no-cache nginx; \
+	apk add --no-cache nginx curl; \
 	ln -sf /dev/stdout /var/log/nginx/access.log; \
 	ln -sf /dev/stderr /var/log/nginx/error.log; \
 	true "Users"; \
