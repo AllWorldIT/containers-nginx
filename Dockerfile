@@ -46,5 +46,5 @@ RUN set -eux; \
 EXPOSE 80
 
 # Health check
-HEALTHCHECK CMD curl --fail http://localhost:80 || exit 1
+HEALTHCHECK CMD curl --fail http://localhost
 
