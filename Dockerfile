@@ -61,10 +61,10 @@ COPY etc/nginx/http.d/20_fdc_proxy_cache.conf /etc/nginx/http.d/
 COPY etc/nginx/http.d/20_fdc_ssl.conf /etc/nginx/http.d/
 COPY etc/nginx/http.d/50_vhost_default.conf /etc/nginx/http.d/
 COPY etc/supervisor/conf.d/nginx.conf /etc/supervisor/conf.d/nginx.conf
-COPY usr/local/share/flexible-docker-containers/init.d/50-nginx.sh /usr/local/share/flexible-docker-containers/init.d
-COPY usr/local/share/flexible-docker-containers/pre-init-tests.d/50-nginx.sh /usr/local/share/flexible-docker-containers/pre-init-tests.d
-COPY usr/local/share/flexible-docker-containers/tests.d/50-nginx.sh /usr/local/share/flexible-docker-containers/tests.d
-COPY usr/local/share/flexible-docker-containers/healthcheck.d/50-nginx.sh /usr/local/share/flexible-docker-containers/healthcheck.d
+COPY usr/local/share/flexible-docker-containers/init.d/44-nginx.sh /usr/local/share/flexible-docker-containers/init.d
+COPY usr/local/share/flexible-docker-containers/pre-init-tests.d/44-nginx.sh /usr/local/share/flexible-docker-containers/pre-init-tests.d
+COPY usr/local/share/flexible-docker-containers/tests.d/44-nginx.sh /usr/local/share/flexible-docker-containers/tests.d
+COPY usr/local/share/flexible-docker-containers/healthcheck.d/44-nginx.sh /usr/local/share/flexible-docker-containers/healthcheck.d
 RUN set -eux; \
 		true "Flexible Docker Containers"; \
 		if [ -n "$VERSION_INFO" ]; then echo "$VERSION_INFO" >> /.VERSION_INFO; fi; \
