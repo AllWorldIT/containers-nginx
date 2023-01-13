@@ -45,7 +45,9 @@ RUN set -ex; \
 	true "Nginx"; \
 	ln -sf /dev/stdout /var/log/nginx/access.log; \
 	ln -sf /dev/stderr /var/log/nginx/error.log; \
-	mkdir /etc/nginx/conf.d; \
+	mkdir \
+		/etc/nginx/conf.d \
+		/etc/nginx/http-extra.d; \
 	rm -f /etc/nginx/http.d/default.conf; \
 	true "Cleanup"; \
 	rm -f /var/cache/apk/*
@@ -71,6 +73,7 @@ RUN set -eux; \
 	true "Permissions"; \
 	chown root:root \
 		/etc/nginx/nginx.conf \
+		/etc/nginx/http-extra.d \
 		/etc/nginx/http.d/20_fdc_brotli.conf \
 		/etc/nginx/http.d/20_fdc_gzip.conf \
 		/etc/nginx/http.d/20_fdc_logging.conf \
@@ -78,6 +81,8 @@ RUN set -eux; \
 		/etc/nginx/http.d/20_fdc_proxy_cache.conf \
 		/etc/nginx/http.d/20_fdc_ssl.conf \
 		/etc/nginx/http.d/50_vhost_default.conf; \
+	chmod 0755 \
+		/etc/nginx/http-extra.d; \
 	chmod 0644 \
 		/etc/nginx/nginx.conf \
 		/etc/nginx/http.d/20_fdc_brotli.conf \
