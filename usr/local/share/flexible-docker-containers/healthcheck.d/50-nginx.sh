@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (c) 2022-2023, AllWorldIT.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,48 +20,27 @@
 # IN THE SOFTWARE.
 
 
-user nginx;
+# Set default health check URI if one has not been provided
+if [ -z "$NGINX_HEALTHCHECK_URI" ]; then
+    NGINX_HEALTHCHECK_URI="http://localhost"
+fi
 
-worker_processes auto;
-worker_cpu_affinity auto;
 
-# Enables the use of JIT for regular expressions to speed-up their processing.
-pcre_jit on;
+# Check we get a positive response back when using IPv4
+if ! curl -H "User-Agent: Health Check" --silent --fail -ipv4 "$NGINX_HEALTHCHECK_URI"; then
+    echo -e "ERROR: Health check failed for Nginx using IPv4"
+    false
+fi
 
-# Includes files with directives to load dynamic modules.
-include /etc/nginx/modules/*.conf;
 
-# Include files with config snippets into the root context.
-include /etc/nginx/conf.d/*.conf;
+# Return if we don't have IPv6 support
+if [ -z "$(ip -6 route show default)" ]; then
+    return
+fi
 
-events {
-	multi_accept on;
-	worker_connections 1024;
-}
 
-http {
-	# Character set
-	charset utf-8;
-
-	# Sendfile settings
-	sendfile on;
-	tcp_nopush on;
-
-	# Keepalive settings
-	keepalive_timeout 35;
-
-	# Limit the tokens we report
-	server_tokens off;
-
-	# Client limits
-	client_max_body_size 64m;
-	client_body_buffer_size 64m;
-
-	# MIME
-	types_hash_max_size 4096;
-	include mime.types;
-	default_type application/octet-stream;
-
-	# Load dynamic configs
-	include /etc/nginx/http.d/*.conf;
-}
+# Check we get a positive response back when using IPv6
+if ! curl -H "User-Agent: Health Check" --silent --fail -ipv6 "$NGINX_HEALTHCHECK_URI"; then
+    echo -e "ERROR: Health check failed for Nginx using IPv6"
+    false
+fi

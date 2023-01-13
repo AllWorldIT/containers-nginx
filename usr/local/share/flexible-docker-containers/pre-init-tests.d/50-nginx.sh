@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (c) 2022-2023, AllWorldIT.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,48 +20,5 @@
 # IN THE SOFTWARE.
 
 
-user nginx;
-
-worker_processes auto;
-worker_cpu_affinity auto;
-
-# Enables the use of JIT for regular expressions to speed-up their processing.
-pcre_jit on;
-
-# Includes files with directives to load dynamic modules.
-include /etc/nginx/modules/*.conf;
-
-# Include files with config snippets into the root context.
-include /etc/nginx/conf.d/*.conf;
-
-events {
-	multi_accept on;
-	worker_connections 1024;
-}
-
-http {
-	# Character set
-	charset utf-8;
-
-	# Sendfile settings
-	sendfile on;
-	tcp_nopush on;
-
-	# Keepalive settings
-	keepalive_timeout 35;
-
-	# Limit the tokens we report
-	server_tokens off;
-
-	# Client limits
-	client_max_body_size 64m;
-	client_body_buffer_size 64m;
-
-	# MIME
-	types_hash_max_size 4096;
-	include mime.types;
-	default_type application/octet-stream;
-
-	# Load dynamic configs
-	include /etc/nginx/http.d/*.conf;
-}
+# Set up our test data
+echo "TEST SUCCESS" > /var/www/html/index.html
