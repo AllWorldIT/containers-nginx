@@ -66,28 +66,28 @@ COPY usr/local/share/flexible-docker-containers/pre-init-tests.d/44-nginx.sh /us
 COPY usr/local/share/flexible-docker-containers/tests.d/44-nginx.sh /usr/local/share/flexible-docker-containers/tests.d
 COPY usr/local/share/flexible-docker-containers/healthcheck.d/44-nginx.sh /usr/local/share/flexible-docker-containers/healthcheck.d
 RUN set -eux; \
-		true "Flexible Docker Containers"; \
-		if [ -n "$VERSION_INFO" ]; then echo "$VERSION_INFO" >> /.VERSION_INFO; fi; \
-		true "Permissions"; \
-		chown root:root \
-			/etc/nginx/nginx.conf \
-			/etc/nginx/http.d/20_fdc_brotli.conf \
-			/etc/nginx/http.d/20_fdc_gzip.conf \
-			/etc/nginx/http.d/20_fdc_logging.conf \
-			/etc/nginx/http.d/20_fdc_proxy_buffering.conf \
-			/etc/nginx/http.d/20_fdc_proxy_cache.conf \
-			/etc/nginx/http.d/20_fdc_ssl.conf \
-			/etc/nginx/http.d/50_vhost_default.conf; \
-		chmod 0644 \
-			/etc/nginx/nginx.conf \
-			/etc/nginx/http.d/20_fdc_brotli.conf \
-			/etc/nginx/http.d/20_fdc_gzip.conf \
-			/etc/nginx/http.d/20_fdc_logging.conf \
-			/etc/nginx/http.d/20_fdc_proxy_buffering.conf \
-			/etc/nginx/http.d/20_fdc_proxy_cache.conf \
-			/etc/nginx/http.d/20_fdc_ssl.conf \
-			/etc/nginx/http.d/50_vhost_default.conf; \
-		fdc set-perms
+	true "Flexible Docker Containers"; \
+	if [ -n "$VERSION_INFO" ]; then echo "$VERSION_INFO" >> /.VERSION_INFO; fi; \
+	true "Permissions"; \
+	chown root:root \
+		/etc/nginx/nginx.conf \
+		/etc/nginx/http.d/20_fdc_brotli.conf \
+		/etc/nginx/http.d/20_fdc_gzip.conf \
+		/etc/nginx/http.d/20_fdc_logging.conf \
+		/etc/nginx/http.d/20_fdc_proxy_buffering.conf \
+		/etc/nginx/http.d/20_fdc_proxy_cache.conf \
+		/etc/nginx/http.d/20_fdc_ssl.conf \
+		/etc/nginx/http.d/50_vhost_default.conf; \
+	chmod 0644 \
+		/etc/nginx/nginx.conf \
+		/etc/nginx/http.d/20_fdc_brotli.conf \
+		/etc/nginx/http.d/20_fdc_gzip.conf \
+		/etc/nginx/http.d/20_fdc_logging.conf \
+		/etc/nginx/http.d/20_fdc_proxy_buffering.conf \
+		/etc/nginx/http.d/20_fdc_proxy_cache.conf \
+		/etc/nginx/http.d/20_fdc_ssl.conf \
+		/etc/nginx/http.d/50_vhost_default.conf; \
+	fdc set-perms
 
 
 EXPOSE 80
