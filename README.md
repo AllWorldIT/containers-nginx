@@ -76,8 +76,13 @@ Configuration files of note can be found below...
 
 ## Virtual hosts
 
-Virtual hosts can be configured in the `/etc/nginx/http.d`, the default virtual host configured is
+Virtual host files can be configured in the `/etc/nginx/http.d`, the default virtual host configured is
 `localhost` in `/etc/nginx/http.d/50_vhost_default.conf`.
+
+There is also a directory that can be mounted instead of single virtual host configuration files, this is generally used when
+cert-bot is required to issue SSL certificates and creates additional configuration files which would not normally persist. For
+this purpose `/etc/nginx/http-extra.d` is available.
+
 
 An example of the default configuration can be found below...
 
