@@ -45,7 +45,9 @@ RUN set -ex; \
 	true "Nginx"; \
 	ln -sf /dev/stdout /var/log/nginx/access.log; \
 	ln -sf /dev/stderr /var/log/nginx/error.log; \
-	mkdir /etc/nginx/conf.d; \
+	mkdir \
+		/etc/nginx/conf.d \
+		/etc/nginx/http-extra.d; \
 	rm -f /etc/nginx/http.d/default.conf; \
 	true "Cleanup"; \
 	rm -f /var/cache/apk/*
@@ -61,33 +63,36 @@ COPY etc/nginx/http.d/20_fdc_proxy_cache.conf /etc/nginx/http.d/
 COPY etc/nginx/http.d/20_fdc_ssl.conf /etc/nginx/http.d/
 COPY etc/nginx/http.d/50_vhost_default.conf /etc/nginx/http.d/
 COPY etc/supervisor/conf.d/nginx.conf /etc/supervisor/conf.d/nginx.conf
-COPY usr/local/share/flexible-docker-containers/init.d/50-nginx.sh /usr/local/share/flexible-docker-containers/init.d
-COPY usr/local/share/flexible-docker-containers/pre-init-tests.d/50-nginx.sh /usr/local/share/flexible-docker-containers/pre-init-tests.d
-COPY usr/local/share/flexible-docker-containers/tests.d/50-nginx.sh /usr/local/share/flexible-docker-containers/tests.d
-COPY usr/local/share/flexible-docker-containers/healthcheck.d/50-nginx.sh /usr/local/share/flexible-docker-containers/healthcheck.d
+COPY usr/local/share/flexible-docker-containers/init.d/44-nginx.sh /usr/local/share/flexible-docker-containers/init.d
+COPY usr/local/share/flexible-docker-containers/pre-init-tests.d/44-nginx.sh /usr/local/share/flexible-docker-containers/pre-init-tests.d
+COPY usr/local/share/flexible-docker-containers/tests.d/44-nginx.sh /usr/local/share/flexible-docker-containers/tests.d
+COPY usr/local/share/flexible-docker-containers/healthcheck.d/44-nginx.sh /usr/local/share/flexible-docker-containers/healthcheck.d
 RUN set -eux; \
-		true "Flexible Docker Containers"; \
-		if [ -n "$VERSION_INFO" ]; then echo "$VERSION_INFO" >> /.VERSION_INFO; fi; \
-		true "Permissions"; \
-		chown root:root \
-			/etc/nginx/nginx.conf \
-			/etc/nginx/http.d/20_fdc_brotli.conf \
-			/etc/nginx/http.d/20_fdc_gzip.conf \
-			/etc/nginx/http.d/20_fdc_logging.conf \
-			/etc/nginx/http.d/20_fdc_proxy_buffering.conf \
-			/etc/nginx/http.d/20_fdc_proxy_cache.conf \
-			/etc/nginx/http.d/20_fdc_ssl.conf \
-			/etc/nginx/http.d/50_vhost_default.conf; \
-		chmod 0644 \
-			/etc/nginx/nginx.conf \
-			/etc/nginx/http.d/20_fdc_brotli.conf \
-			/etc/nginx/http.d/20_fdc_gzip.conf \
-			/etc/nginx/http.d/20_fdc_logging.conf \
-			/etc/nginx/http.d/20_fdc_proxy_buffering.conf \
-			/etc/nginx/http.d/20_fdc_proxy_cache.conf \
-			/etc/nginx/http.d/20_fdc_ssl.conf \
-			/etc/nginx/http.d/50_vhost_default.conf; \
-		fdc set-perms
+	true "Flexible Docker Containers"; \
+	if [ -n "$VERSION_INFO" ]; then echo "$VERSION_INFO" >> /.VERSION_INFO; fi; \
+	true "Permissions"; \
+	chown root:root \
+		/etc/nginx/nginx.conf \
+		/etc/nginx/http-extra.d \
+		/etc/nginx/http.d/20_fdc_brotli.conf \
+		/etc/nginx/http.d/20_fdc_gzip.conf \
+		/etc/nginx/http.d/20_fdc_logging.conf \
+		/etc/nginx/http.d/20_fdc_proxy_buffering.conf \
+		/etc/nginx/http.d/20_fdc_proxy_cache.conf \
+		/etc/nginx/http.d/20_fdc_ssl.conf \
+		/etc/nginx/http.d/50_vhost_default.conf; \
+	chmod 0755 \
+		/etc/nginx/http-extra.d; \
+	chmod 0644 \
+		/etc/nginx/nginx.conf \
+		/etc/nginx/http.d/20_fdc_brotli.conf \
+		/etc/nginx/http.d/20_fdc_gzip.conf \
+		/etc/nginx/http.d/20_fdc_logging.conf \
+		/etc/nginx/http.d/20_fdc_proxy_buffering.conf \
+		/etc/nginx/http.d/20_fdc_proxy_cache.conf \
+		/etc/nginx/http.d/20_fdc_ssl.conf \
+		/etc/nginx/http.d/50_vhost_default.conf; \
+	fdc set-perms
 
 
 EXPOSE 80
