@@ -20,11 +20,22 @@
 # IN THE SOFTWARE.
 
 
+fdc_notice "Setting up Nginx permissions"
+
 # Create nginx run directory
 if [ ! -d /run/nginx ]; then
 	mkdir /run/nginx
 fi
 
+# Make sure our cache directory exists with the right permissions
+if [ ! -d /var/lib/nginx/cache ]; then
+	mkdir /var/lib/nginx/cache
+fi
+chown nginx:nginx /var/lib/nginx/cache
+chmod 0750 /var/lib/nginx/cache
+
+
+fdc_notice "Initializing Nginx settings"
 
 # Set the client max body size and default to 64m
 if [ -n "$NGINX_CLIENT_MAX_BODY_SIZE" ]; then
@@ -44,16 +55,9 @@ fi
 
 # Check if we have a healthcheck URI
 if [ -z "$NGINX_HEALTHCHECK_URI" ]; then
-	NGINX_HEALTHCHECK_URI="http://localhost"
+	export NGINX_HEALTHCHECK_URI="http://localhost"
 fi
 
-
-# Make sure our cache directory exists with the right permissions
-if [ ! -d /var/lib/nginx/cache ]; then
-	mkdir /var/lib/nginx/cache
-fi
-chown nginx:nginx /var/lib/nginx/cache
-chmod 0750 /var/lib/nginx/cache
 
 
 # If we have any SSL configuration we need to generate the Diffie-Hellman parameters for EDH ciphers
