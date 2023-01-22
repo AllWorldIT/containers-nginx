@@ -20,55 +20,37 @@
 # IN THE SOFTWARE.
 
 
-echo "TEST START (nginx): Check Nginx is responding using IPv4..."
+fdc_test_start nginx "Check Nginx is responding using IPv4..."
 if ! curl --verbose --ipv4 "$NGINX_HEALTHCHECK_URI" --output test.out; then
-	echo "TEST FAILED (nginx): Failed to get test data from Nginx using IPv4"
-	echo "= = = OUTPUT = = ="
-	cat test.out
-	echo "= = = OUTPUT = = ="
+	fdc_test_fail nginx "Failed to get test data from Nginx using IPv4"
 	false
 fi
 
 echo "TEST SUCCESS" > test.out.correct
-if ! diff test.out test.out.correct; then
-	echo "TEST FAILED (nginx): Contents of output does not match what it should be using IPv4"
-	echo "= = = test.out = = ="
-	cat test.out
-	echo "= = = test.out = = ="
-	echo "= = = test.out.correct = = ="
-	cat test.out.correct
-	echo "= = = test.out.correect = = ="
+if ! diff test.out.correct test.out; then
+	fdc_test_fail nginx "Contents of output does not match what it should be using IPv4"
 	false
 fi
 
-echo "TEST PASSED (nginx): Nginx is responding using IPv4"
+fdc_test_pass nginx "Nginx is responding using IPv4"
 
 
 # Return if we don't have IPv6 support
 if [ -z "$(ip -6 route show default)" ]; then
-    return
+	return
 fi
 
 
-echo "TEST START (nginx): Check Nginx is responding using IPv6..."
+fdc_test_start nginx "Check Nginx is responding using IPv6..."
 if ! curl --verbose --ipv6 "$NGINX_HEALTHCHECK_URI" --output test.out; then
-	echo "TEST FAILED (nginx): Failed to get test data from Nginx using IPv6"
-	echo "= = = OUTPUT = = ="
-	cat test.out
-	echo "= = = OUTPUT = = ="
+	fdc_test_fail nginx "Failed to get test data from Nginx using IPv6"
 	false
 fi
 
 echo "TEST SUCCESS" > test.out.correct
-if ! diff test.out test.out.correct; then
-	echo "TEST FAILED (nginx): Contents of output does not match what it should be"
-	echo "= = = test.out = = ="
-	cat test.out
-	echo "= = = test.out = = ="
-	echo "= = = test.out.correct = = ="
-	cat test.out.correct
-	echo "= = = test.out.correect = = ="
+if ! diff test.out.correct test.out; then
+	fdc_test_fail nginx "Contents of output does not match what it should be using IPv6"
 	false
 fi
 
-echo "TEST PASSED (nginx): Nginx is responding"
+fdc_test_pass nginx "Nginx is responding"
