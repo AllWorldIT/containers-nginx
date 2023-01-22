@@ -11,6 +11,12 @@ Generally apps running on webservers require some way to send email, this is why
 Postfix image](https://gitlab.conarx.tech/containers/postfix). Email support is only enabled when the relevant environment variable
 configuration is present.
 
+Additional Nginx modules included:
+
+- mod-http-brotli
+- mod-http-cache-purge
+- mod-http-fancyindex
+
 
 
 # Mirrors
@@ -22,16 +28,43 @@ configuration is present.
 
 
 
+# Conarx Containers
+
+All our Docker images are part of our Conarx Containers product line. Images are generally based on Alpine Linux and track the
+Alpine Linux major and minor version in the format of `vXX.YY`.
+
+Images built from source track both the Alpine Linux major and minor versions in addition to the main software component being
+built in the format of `vXX.YY-AA.BB`, where `AA.BB` is the main software component version.
+
+Our images are built using our Flexible Docker Containers framework which includes the below features...
+
+- Flexible container initialization and startup
+- Integrated unit testing
+- Advanced multi-service health checks
+- Native IPv6 support for all containers
+- Debugging options
+
+
+
+# Community Support
+
+Please use the project [Issue Tracker](https://gitlab.conarx.tech/containers/nginx/-/issues).
+
+
+
 # Commercial Support
 
-Commercial support is available from [Conarx](https://conarx.tech).
+Commercial support for all our Docker images is available from [Conarx](https://conarx.tech).
+
+We also provide consulting services to create and maintain Docker images to meet your exact needs.
 
 
 
 # Environment Variables
 
-Additional environment variables are available from [Conarx Containers Postfix image](https://gitlab.conarx.tech/containers/postfix)
-and [Conarx Containers Alpine image](https://gitlab.conarx.tech/containers/alpine).
+Additional environment variables are available from...
+* [Conarx Containers Postfix image](https://gitlab.conarx.tech/containers/postfix)
+* [Conarx Containers Alpine image](https://gitlab.conarx.tech/containers/alpine).
 
 
 ## NGINX_CLIENT_MAX_BODY_SIZE
@@ -60,6 +93,33 @@ Defaults to "http://localhost", it must be IPv4 and IPv6 compatible, the `User-A
 
 
 
+# Volumes
+
+
+## /var/www/html
+
+Document root.
+
+
+## /var/lib/nginx/cache
+
+A volume can be mount to this location if using reverse proxying to have a persistent cache.
+
+
+## /etc/ssl/nginx
+
+Diffie-Huffman parameters are written to this directory if SSL is used.
+
+
+
+# Exposed Ports
+
+Postfix port 25 is exposed by the [Conarx Containers Postfix image](https://gitlab.conarx.tech/containers/postfix) layer.
+
+Nginx port 80 is exposed.
+
+
+
 # Configuration
 
 Configuration files of note can be found below...
@@ -72,6 +132,7 @@ Configuration files of note can be found below...
 | /etc/nginx/http.d/20_fdc_proxy_buffering.conf  | Proxy buffering configuration, for reverse proxies |
 | /etc/nginx/http.d/20_fdc_proxy_cache.conf      | Proxy caching configuration, for reverse proxies   |
 | /etc/nginx/http.d/20_fdc_ssl.conf              | SSL configuration                                  |
+| /etc/nginx/http-extra.d/                       | Mountable volume for specifying multiple configs   |
 
 
 ## Virtual hosts
@@ -84,9 +145,9 @@ cert-bot is required to issue SSL certificates and creates additional configurat
 this purpose `/etc/nginx/http-extra.d` is available.
 
 
-An example of the default configuration can be found below...
+An example of the default vhost configuration can be found below...
 
-```
+```nginx
 server {
 	listen 80;
 	server_name localhost;
@@ -119,21 +180,3 @@ SSL can be used in virtual hosts, on a side note to this, Diffie-Huffman paramte
 
 Diffie-Huffman parameters can be persisted by using a volume mount on `/etc/ssl/nginx`, see below.
 
-
-
-# Volumes
-
-
-## /var/www/html
-
-Document root.
-
-
-## /var/lib/nginx/cache
-
-A volume can be mount to this location if using reverse proxying to have a persistent cache.
-
-
-## /etc/ssl/nginx
-
-Diffie-Huffman parameters are written to this directory if SSL is used.

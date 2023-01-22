@@ -28,7 +28,7 @@ LABEL org.opencontainers.image.version   = "3.17"
 LABEL org.opencontainers.image.base.name = "registry.conarx.tech/containers/postfix/3.17"
 
 
-RUN set -ex; \
+RUN set -eux; \
 	true "Nginx"; \
 	apk add --no-cache \
 		nginx \
@@ -41,7 +41,10 @@ RUN set -ex; \
 	adduser -u 82 -D -S -H -h /var/www/html -G www-data www-data; \
 	true "Web root"; \
 	mkdir -p /var/www/html; \
-	chown www-data:www-data /var/www/html; chmod 0755 /var/www/html; \
+	chown www-data:www-data \
+		/var/www/html; \
+	chmod 0755 \
+		/var/www/html; \
 	true "Nginx"; \
 	ln -sf /dev/stdout /var/log/nginx/access.log; \
 	ln -sf /dev/stderr /var/log/nginx/error.log; \
@@ -49,6 +52,7 @@ RUN set -ex; \
 		/etc/nginx/conf.d \
 		/etc/nginx/http-extra.d; \
 	rm -f /etc/nginx/http.d/default.conf; \
+	rm -rf /var/www/localhost; \
 	true "Cleanup"; \
 	rm -f /var/cache/apk/*
 
@@ -94,5 +98,7 @@ RUN set -eux; \
 		/etc/nginx/http.d/50_vhost_default.conf; \
 	fdc set-perms
 
+
+VOLUME ["/var/www/html", "/var/lib/nginx/cache"]
 
 EXPOSE 80
