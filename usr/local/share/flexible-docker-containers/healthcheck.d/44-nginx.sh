@@ -22,25 +22,25 @@
 
 # Set default health check URI if one has not been provided
 if [ -z "$NGINX_HEALTHCHECK_URI" ]; then
-    NGINX_HEALTHCHECK_URI="http://localhost"
+	NGINX_HEALTHCHECK_URI="http://localhost"
 fi
 
 
 # Check we get a positive response back when using IPv4
 if ! curl -H "User-Agent: Health Check" --silent --fail -ipv4 "$NGINX_HEALTHCHECK_URI"; then
-    echo -e "ERROR: Health check failed for Nginx using IPv4"
-    false
+	fdc_error "Health check failed for Nginx using IPv4"
+	false
 fi
 
 
 # Return if we don't have IPv6 support
 if [ -z "$(ip -6 route show default)" ]; then
-    return
+	return
 fi
 
 
 # Check we get a positive response back when using IPv6
 if ! curl -H "User-Agent: Health Check" --silent --fail -ipv6 "$NGINX_HEALTHCHECK_URI"; then
-    echo -e "ERROR: Health check failed for Nginx using IPv6"
-    false
+	fdc_error "Health check failed for Nginx using IPv6"
+	false
 fi
