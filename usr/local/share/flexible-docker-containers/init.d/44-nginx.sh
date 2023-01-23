@@ -53,6 +53,16 @@ if [ -z "$NGINX_ENABLE_GZIP" ]; then
 	sed -i -e 's/gzip off;/gzip on;/' /etc/nginx/http.d/20_fdc_gzip.conf
 fi
 
+# Check if we're adding in the real IP of requests so we can properly report the client IP
+if [ -n "$NGINX_SET_REAL_IP_FROM" ]; then
+	while read -r i; do
+		# Skip lines which are only whitespaces
+		[ -z "${i/ /}" ] && continue
+		# Add 'set_real_ip_from' after 'server_name'
+		echo "set_real_ip_from $i;" >> /etc/nginx/http.d/20_fdc_set_real_ip_from.conf
+	done <<< "$NGINX_SET_REAL_IP_FROM"
+fi
+
 # Check if we have a healthcheck URI
 if [ -z "$NGINX_HEALTHCHECK_URI" ]; then
 	export NGINX_HEALTHCHECK_URI="http://localhost"
