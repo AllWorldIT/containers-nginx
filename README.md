@@ -86,6 +86,12 @@ Enable Gzip compressed responses, this is generally only enabled for reverse pro
 directly to the internet without a revserse proxy.
 
 
+## NGINX_SET_REAL_IP_FROM
+
+This can be a multi-line configuration option containing one IP address or IP address range per line which will result in the
+generation of Nginx configuration lines in the format of `set_real_ip_from xxxxx;`.
+
+
 ## NGINX_HEALTHCHECK_URI
 
 Defaults to "http://localhost", it must be IPv4 and IPv6 compatible, the `User-Agent` header in health checks is set to
@@ -131,6 +137,7 @@ Configuration files of note can be found below...
 | /etc/nginx/http.d/20_fdc_logging.conf          | Logging configuration                              |
 | /etc/nginx/http.d/20_fdc_proxy_buffering.conf  | Proxy buffering configuration, for reverse proxies |
 | /etc/nginx/http.d/20_fdc_proxy_cache.conf      | Proxy caching configuration, for reverse proxies   |
+| /etc/nginx/http.d/20_fdc_set_real_ip_from.conf | Configuration created from $NGINX_SET_REAL_IP_FROM |
 | /etc/nginx/http.d/20_fdc_ssl.conf              | SSL configuration                                  |
 | /etc/nginx/http-extra.d/                       | Mountable volume for specifying multiple configs   |
 
