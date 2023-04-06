@@ -73,6 +73,7 @@ COPY etc/nginx/http.d/50_vhost_default.conf.template /etc/nginx/http.d/
 COPY etc/nginx/http.d/50_vhost_default-redirect.conf.template /etc/nginx/http.d/
 COPY etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template /etc/nginx/http.d/
 COPY etc/supervisor/conf.d/nginx.conf /etc/supervisor/conf.d/nginx.conf
+COPY usr/local/sbin/run-certbot-renew /usr/local/sbin
 COPY usr/local/share/flexible-docker-containers/pre-init.d/44-nginx-certbot.sh /usr/local/share/flexible-docker-containers/pre-init.d
 COPY usr/local/share/flexible-docker-containers/init.d/44-nginx.sh /usr/local/share/flexible-docker-containers/init.d
 COPY usr/local/share/flexible-docker-containers/pre-init-tests.d/44-nginx.sh /usr/local/share/flexible-docker-containers/pre-init-tests.d
@@ -93,9 +94,11 @@ RUN set -eux; \
 		/etc/nginx/http.d/20_fdc_ssl.conf \
 		/etc/nginx/http.d/50_vhost_default.conf.template \
 		/etc/nginx/http.d/50_vhost_default-redirect.conf.template \
-		/etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template; \
+		/etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template \
+		/usr/local/sbin/run-certbot-renew; \
 	chmod 0755 \
-		/etc/nginx/http-extra.d; \
+		/etc/nginx/http-extra.d \
+		/usr/local/sbin/run-certbot-renew; \
 	chmod 0644 \
 		/etc/nginx/nginx.conf \
 		/etc/nginx/http.d/20_fdc_brotli.conf \
