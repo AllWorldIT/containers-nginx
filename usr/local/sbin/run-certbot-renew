@@ -19,7 +19,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-delay=$(( $RANDOM % 43200 ))
+delay=$(( RANDOM % 43200 ))
 
 echo "Certbot: Waiting ${delay}s to renew"
 /usr/bin/certbot --non-interactive --debug --nginx renew
