@@ -19,11 +19,7 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-# If we have certbot configured, install a cronjob to renew the certs
-if [ -n "$CERTBOT_DOMAINS" ]; then
-    fdc_info "Installing Certbot crontab"
-    cat <<EOF > /etc/cron.d/nginx-certbot
-# min   hour    day     month   weekday   user      command
-0       0       *       *       *         root      /usr/local/sbin/run-certbot-renew
-EOF
-fi
+delay=$(( RANDOM % 43200 ))
+
+echo "Certbot: Waiting ${delay}s to renew"
+/usr/bin/certbot --non-interactive --debug --nginx renew
