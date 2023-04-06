@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (c) 2022-2023, AllWorldIT.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,23 +19,11 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-
-# Set secure protocol defaults
-ssl_protocols TLSv1.2 TLSv1.3;
-
-# Prefer server ciphers over client ones
-ssl_prefer_server_ciphers on;
-
-# 2m of cache can handle about 8000 sessions
-ssl_session_cache shared:SSL:2m;
-
-# Allow client to reuse session parameters for 1hr
-ssl_session_timeout 1h;
-
-# SSL session tickets are insecure, disable them
-ssl_session_tickets off;
-
-# Use only safe ciphers
-# ref LetsEncrypt /etc/letsencrypt/options-ssl-nginx.conf
-# ref https://ssl-config.mozilla.org
-ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
+# If we have certbot configured, install a cronjob to renew the certs
+if [ -n "$CERTBOT_DOMAINS" ]; then
+    fdc_info "Installing Certbot crontab"
+    cat <<EOF > /etc/cron.d/nginx-certbot
+# min   hour    day     month   weekday   user      command
+*/5     *       *       *       *         root      /usr/bin/certbot --non-interactive --debug --nginx renew
+EOF
+fi

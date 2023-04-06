@@ -36,7 +36,9 @@ RUN set -eux; \
 		nginx-mod-http-cache-purge \
 		nginx-mod-http-fancyindex \
 		curl \
-		openssl; \
+		openssl \
+		certbot \
+		certbot-nginx; \
 	true "Users"; \
 	adduser -u 82 -D -S -H -h /var/www/html -G www-data www-data; \
 	true "Web root"; \
@@ -65,8 +67,11 @@ COPY etc/nginx/http.d/20_fdc_logging.conf /etc/nginx/http.d/
 COPY etc/nginx/http.d/20_fdc_proxy_buffering.conf /etc/nginx/http.d/
 COPY etc/nginx/http.d/20_fdc_proxy_cache.conf /etc/nginx/http.d/
 COPY etc/nginx/http.d/20_fdc_ssl.conf /etc/nginx/http.d/
-COPY etc/nginx/http.d/50_vhost_default.conf /etc/nginx/http.d/
+COPY etc/nginx/http.d/50_vhost_default.conf.template /etc/nginx/http.d/
+COPY etc/nginx/http.d/50_vhost_default-redirect.conf.template /etc/nginx/http.d/
+COPY etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template /etc/nginx/http.d/
 COPY etc/supervisor/conf.d/nginx.conf /etc/supervisor/conf.d/nginx.conf
+COPY usr/local/share/flexible-docker-containers/pre-init.d/44-nginx-certbot.sh /usr/local/share/flexible-docker-containers/pre-init.d
 COPY usr/local/share/flexible-docker-containers/init.d/44-nginx.sh /usr/local/share/flexible-docker-containers/init.d
 COPY usr/local/share/flexible-docker-containers/pre-init-tests.d/44-nginx.sh /usr/local/share/flexible-docker-containers/pre-init-tests.d
 COPY usr/local/share/flexible-docker-containers/tests.d/44-nginx.sh /usr/local/share/flexible-docker-containers/tests.d
@@ -84,7 +89,9 @@ RUN set -eux; \
 		/etc/nginx/http.d/20_fdc_proxy_buffering.conf \
 		/etc/nginx/http.d/20_fdc_proxy_cache.conf \
 		/etc/nginx/http.d/20_fdc_ssl.conf \
-		/etc/nginx/http.d/50_vhost_default.conf; \
+		/etc/nginx/http.d/50_vhost_default.conf.template \
+		/etc/nginx/http.d/50_vhost_default-redirect.conf.template \
+		/etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template; \
 	chmod 0755 \
 		/etc/nginx/http-extra.d; \
 	chmod 0644 \
@@ -95,10 +102,13 @@ RUN set -eux; \
 		/etc/nginx/http.d/20_fdc_proxy_buffering.conf \
 		/etc/nginx/http.d/20_fdc_proxy_cache.conf \
 		/etc/nginx/http.d/20_fdc_ssl.conf \
-		/etc/nginx/http.d/50_vhost_default.conf; \
+		/etc/nginx/http.d/50_vhost_default.conf.template \
+		/etc/nginx/http.d/50_vhost_default-redirect.conf.template \
+		/etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template; \
 	fdc set-perms
 
 
 VOLUME ["/var/www/html", "/var/lib/nginx/cache"]
 
 EXPOSE 80
+EXPOSE 443
