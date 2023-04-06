@@ -24,6 +24,6 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
     fdc_info "Installing Certbot crontab"
     cat <<EOF > /etc/cron.d/nginx-certbot
 # min   hour    day     month   weekday   user      command
-*/5     *       *       *       *         root      /usr/bin/certbot --non-interactive --debug --nginx renew
+0       0       *       *       *         root      /usr/local/sbin/run-certbot-renew
 EOF
 fi
