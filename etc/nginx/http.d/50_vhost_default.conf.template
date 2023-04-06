@@ -1,6 +1,6 @@
 server {
-	listen [::]:80 ipv6only=off;
-	server_name localhost;
+	listen [::]:80 ipv6only=off default_server;
+	server_name _;
 
 	root /var/www/html;
 

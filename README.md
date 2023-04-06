@@ -98,6 +98,41 @@ Defaults to "http://localhost", it must be IPv4 and IPv6 compatible, the `User-A
 `Health Check`.
 
 
+# Environment Variables - Certbot integration
+
+
+## CERTBOT_DOMAINS
+
+List of domains, comma separated to issue a Lets Encrypt for.
+
+
+## CERTBOT_EMAIL
+
+Mandatory email address to use for Certbot.
+
+
+## CERTBOT_CERT_NAME
+
+Certificate name passed to Certbot, you probably don't want to override this. Defaults to the first domain listed in
+`CERTBOT_DOMAINS`.
+
+
+## NGINX_HTTP_REDIRECT_HTTPS
+
+Redireect HTTP to HTTPS, valid values are "yes" and "no". Will default to "no" when there is no `CERTBOT_DOMAINS` configured or
+yes if configured.
+
+
+## NGINX_HTTP_REDIRECT_CODE
+
+HTTP to HTTPS redirect code, defaults to "302".
+
+
+## NGINX_HTTP_REDIRECT_TARGET
+
+HTTP to HTTPS redirect target, defaults to "https://$host$request_uri".
+
+
 
 # Volumes
 
@@ -114,7 +149,12 @@ A volume can be mount to this location if using reverse proxying to have a persi
 
 ## /etc/ssl/nginx
 
-Diffie-Huffman parameters are written to this directory if SSL is used.
+Diffie-Huffman parameters are written to this directory if SSL is enabled.
+
+
+## /etc/letsencrypt
+
+Lets Encrypt configuration is stored in this directory if `CERTBOT_DOMAINS` is set.
 
 
 
@@ -124,28 +164,39 @@ Postfix port 25 is exposed by the [Conarx Containers Postfix image](https://gitl
 
 Nginx port 80 is exposed.
 
+Nginx port 443 is exposed, but only listened on if `CERTBOT_DOMAINS` is set.
+
 
 
 # Configuration
 
 Configuration files of note can be found below...
 
-| Path                                           | Description                                        |
-|------------------------------------------------|----------------------------------------------------|
-| /etc/nginx/http.d/20_fdc_brotli.conf           | Brotli configuration                               |
-| /etc/nginx/http.d/20_fdc_gzip.conf             | Gzip configuration                                 |
-| /etc/nginx/http.d/20_fdc_logging.conf          | Logging configuration                              |
-| /etc/nginx/http.d/20_fdc_proxy_buffering.conf  | Proxy buffering configuration, for reverse proxies |
-| /etc/nginx/http.d/20_fdc_proxy_cache.conf      | Proxy caching configuration, for reverse proxies   |
-| /etc/nginx/http.d/20_fdc_set_real_ip_from.conf | Configuration created from $NGINX_SET_REAL_IP_FROM |
-| /etc/nginx/http.d/20_fdc_ssl.conf              | SSL configuration                                  |
-| /etc/nginx/http-extra.d/                       | Mountable volume for specifying multiple configs   |
+| Path                                                         | Description                                               |
+|--------------------------------------------------------------|-----------------------------------------------------------|
+| /etc/nginx/http.d/20_fdc_brotli.conf                         | Brotli configuration                                      |
+| /etc/nginx/http.d/20_fdc_gzip.conf                           | Gzip configuration                                        |
+| /etc/nginx/http.d/20_fdc_logging.conf                        | Logging configuration                                     |
+| /etc/nginx/http.d/20_fdc_proxy_buffering.conf                | Proxy buffering configuration, for reverse proxies        |
+| /etc/nginx/http.d/20_fdc_proxy_cache.conf                    | Proxy caching configuration, for reverse proxies          |
+| /etc/nginx/http.d/20_fdc_set_real_ip_from.conf               | Configuration created from $NGINX_SET_REAL_IP_FROM        |
+| /etc/nginx/http.d/20_fdc_ssl.conf                            | SSL configuration                                         |
+| /etc/nginx/http.d/50_vhost_default.conf.template             | Default vhost configuration template                      |
+| /etc/nginx/http.d/50_vhost_default-redirect.conf.template    | Default configuration template for HTTP to HTTPS redirect |
+| /etc/nginx/http.d/50_vhost_default-ssl-certbot.conf.template | Default SSL config for Certbot                            |
+| /etc/nginx/http-extra.d/                                     | Mountable volume for specifying additional configs        |
 
 
 ## Virtual hosts
 
-Virtual host files can be configured in the `/etc/nginx/http.d`, the default virtual host configured is
-`localhost` in `/etc/nginx/http.d/50_vhost_default.conf`.
+Virtual host files can be configured in the `/etc/nginx/http.d`, by default HTTP uses `_` as the `server_name`. The template is
+copied to `/etc/nginx/http.d/50_vhost_default.conf` during startup if no configuration file of the same name exists. While you
+can override the default vhost config file, its best to override the templates instead.
+
+If `CERTBOT_DOMAINS` was configured, then the `/etc/nginx/http.d/50_vhost_default-redirect.conf.template` is copied instead
+to `/etc/nginx/http.d/50_vhost_default.conf`, again only if no configuration file with the same name exists. At the same time the
+SSL template `/etc/nginx/http.d/50_vhost_default-ssl-certbot.conf.template` is copied and the `server_name` configuration filled in
+and the certificate name replaced.
 
 There is also a directory that can be mounted instead of single virtual host configuration files, this is generally used when
 cert-bot is required to issue SSL certificates and creates additional configuration files which would not normally persist. For
@@ -156,9 +207,8 @@ An example of the default vhost configuration can be found below...
 
 ```nginx
 server {
-	listen 80;
-	server_name localhost;
-	set_real_ip_from 172.16.0.0/12;
+	listen [::]:80 ipv6only=off default_server;
+	server_name _;
 
 	root /var/www/html;
 
