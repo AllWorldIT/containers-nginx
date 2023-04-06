@@ -1,0 +1,24 @@
+server {
+	listen [::]:443 ipv6only=off ssl http2;
+	server_name @SERVER_NAME@;
+
+	root /var/www/html;
+
+	location = /favicon.ico {
+		log_not_found off;
+		access_log off;
+	}
+
+	location = /robots.txt {
+		allow all;
+		log_not_found off;
+		access_log off;
+	}
+
+	location ~* \.(js|css|gif|ico|jpg|jpeg|png)$ {
+		expires max;
+	}
+
+	ssl_certificate /etc/letsencrypt/live/@CERTBOT_CERT_NAME@/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/@CERTBOT_CERT_NAME@/privkey.pem;
+}
