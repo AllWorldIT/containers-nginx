@@ -85,21 +85,33 @@ if [ ! -e /etc/nginx/http.d/50_vhost_default.conf ]; then
 		NGINX_HTTP_REDIRECT_HTTPS=${NGINX_HTTP_REDIRECT_HTTPS:-no}
 	fi
 
-	# No redirect is in place, copy the default config
-	if [ "$NGINX_HTTP_REDIRECT_HTTPS" = "no" ]; then
-		cp /etc/nginx/http.d/50_vhost_default.conf.template /etc/nginx/http.d/50_vhost_default.conf
+	# Copy the HTTP config file
+	cp /etc/nginx/http.d/50_vhost_default.conf.template /etc/nginx/http.d/50_vhost_default.conf
 
-	# We need to redirect, so copy the redirect template
-	else
+	# Check if we're redirecting to HTTPS
+	if [ "$NGINX_HTTP_REDIRECT_HTTPS" = "yes" ]; then
 		fdc_notice "Redirecting HTTP to HTTPS"
 
-		cp /etc/nginx/http.d/50_vhost_default-redirect.conf.template /etc/nginx/http.d/50_vhost_default.conf
+		# Create temporary file with our block of config
+		tmpfile=$(mktemp /tmp/44-nginx-init.XXXXXX)
+		cat <<EOF > "$tmpfile"
+	if (\$remote_addr !~ "^(::ffff:127|::1$)") {
+			return @NGINX_HTTP_REDIRECT_CODE@ @NGINX_HTTP_REDIRECT_TARGET@;
+	}
+EOF
+		# Inject file at the REDIRECT TAG
+		sed -i -e "/@NGINX_HTTP_REDIRECT@/r $tmpfile" /etc/nginx/http.d/50_vhost_default.conf
+		# Remove temp file
+		rm "$tmpfile"
+
 		sed -i -E \
 			-e "s/@NGINX_HTTP_REDIRECT_CODE@/$NGINX_HTTP_REDIRECT_CODE/" \
-			-e "s,@NGINX_HTTP_REDIRECT_TARGET,$NGINX_HTTP_REDIRECT_TARGET," \
+			-e "s,@NGINX_HTTP_REDIRECT_TARGET@,$NGINX_HTTP_REDIRECT_TARGET," \
 			/etc/nginx/http.d/50_vhost_default.conf
 	fi
 
+	# Remove redirect tag
+	sed -i -e "/@NGINX_HTTP_REDIRECT@/d" /etc/nginx/http.d/50_vhost_default.conf
 fi
 
 
