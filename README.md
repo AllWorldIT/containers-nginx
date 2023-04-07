@@ -212,6 +212,8 @@ server {
 
 	root /var/www/html;
 
+@NGINX_HTTP_REDIRECT@
+
 	location = /favicon.ico {
 		log_not_found off;
 		access_log off;
