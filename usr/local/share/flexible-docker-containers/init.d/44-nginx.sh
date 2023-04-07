@@ -91,7 +91,7 @@ if [ ! -e /etc/nginx/http.d/50_vhost_default.conf ]; then
 
 	# We need to redirect, so copy the redirect template
 	else
-		fdc_debug "Nginx HTTP redirect to HTTPS"
+		fdc_info "Nginx HTTP redirect to HTTPS"
 
 		cp /etc/nginx/http.d/50_vhost_default-redirect.conf.template /etc/nginx/http.d/50_vhost_default.conf
 		sed -i -E \
