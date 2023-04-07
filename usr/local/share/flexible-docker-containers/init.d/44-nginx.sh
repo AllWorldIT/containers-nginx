@@ -134,21 +134,19 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 				-e "s/^(\tserver_name @SERVER_NAME@;)/\tserver_name $server_name;\n\1/" \
 				-e "s/@CERTBOT_CERT_NAME@/$CERTBOT_CERT_NAME/" \
 				/etc/nginx/http.d/55_vhost_default-ssl.conf.new
-			# Remove template line
-			sed -i -E \
-				-e "/server_name @SERVER_NAME@;/d" \
-				/etc/nginx/http.d/55_vhost_default-ssl.conf.new
 
 			# Add server names
 			sed -i -E \
 				-e "s/^(\tserver_name @SERVER_NAME@;)/\tserver_name $server_name;\n\1/" \
 				-e "s,/live/@CERTBOT_CERT_NAME@,/dummy/$CERTBOT_CERT_NAME," \
 				/etc/nginx/http.d/55_vhost_default-ssl.conf.dummy
-			# Remove template line
-			sed -i -E \
-				-e "/server_name @SERVER_NAME@;/d" \
-				/etc/nginx/http.d/55_vhost_default-ssl.conf.dummy
 		done
+
+		# Remove template lines
+		sed -i -E \
+			-e "/server_name @SERVER_NAME@;/d" \
+			/etc/nginx/http.d/55_vhost_default-ssl.conf.new \
+			/etc/nginx/http.d/55_vhost_default-ssl.conf.dummy
 
 	#
 	# Step 2 - Check if we can activate SSL right now
