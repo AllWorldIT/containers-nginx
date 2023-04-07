@@ -119,8 +119,9 @@ Certificate name passed to Certbot, you probably don't want to override this. De
 
 ## NGINX_HTTP_REDIRECT_HTTPS
 
-Redireect HTTP to HTTPS, valid values are "yes" and "no". Will default to "no" when there is no `CERTBOT_DOMAINS` configured or
-yes if configured.
+This is set automatically when `CERTBOT_DOMAINS` is set, it contains a regex exclusion for HTTP redirection. The default value
+is `^(::ffff:127|::1$)`. This default excludes localhost access from redirection so health checks hit the application not a
+redirect.
 
 
 ## NGINX_HTTP_REDIRECT_CODE
