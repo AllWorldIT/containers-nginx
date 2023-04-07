@@ -80,23 +80,21 @@ if [ ! -e /etc/nginx/http.d/50_vhost_default.conf ]; then
 
 	# Set default to redirect HTTP to HTTPS if we're using Certbot
 	if [ -n "$CERTBOT_DOMAINS" ]; then
-		NGINX_HTTP_REDIRECT_HTTPS=${NGINX_HTTP_REDIRECT_HTTPS:-yes}
-	else
-		NGINX_HTTP_REDIRECT_HTTPS=${NGINX_HTTP_REDIRECT_HTTPS:-no}
+		NGINX_HTTP_REDIRECT_HTTPS=${NGINX_HTTP_REDIRECT_HTTPS:-'^(::ffff:127|::1$)'}
 	fi
 
 	# Copy the HTTP config file
 	cp /etc/nginx/http.d/50_vhost_default.conf.template /etc/nginx/http.d/50_vhost_default.conf
 
 	# Check if we're redirecting to HTTPS
-	if [ "$NGINX_HTTP_REDIRECT_HTTPS" = "yes" ]; then
+	if [ -n "$NGINX_HTTP_REDIRECT_HTTPS" ]; then
 		fdc_notice "Redirecting HTTP to HTTPS"
 
 		# Create temporary file with our block of config
 		tmpfile=$(mktemp /tmp/44-nginx-init.XXXXXX)
 		cat <<EOF > "$tmpfile"
-	if (\$remote_addr !~ "^(::ffff:127|::1$)") {
-			return @NGINX_HTTP_REDIRECT_CODE@ @NGINX_HTTP_REDIRECT_TARGET@;
+	if (\$remote_addr !~ "$NGINX_HTTP_REDIRECT_HTTPS") {
+		return @NGINX_HTTP_REDIRECT_CODE@ @NGINX_HTTP_REDIRECT_TARGET@;
 	}
 EOF
 		# Inject file at the REDIRECT TAG
