@@ -91,7 +91,7 @@ if [ ! -e /etc/nginx/http.d/50_vhost_default.conf ]; then
 
 	# We need to redirect, so copy the redirect template
 	else
-		fdc_info "Nginx HTTP redirect to HTTPS"
+		fdc_notice "Redirecting HTTP to HTTPS"
 
 		cp /etc/nginx/http.d/50_vhost_default-redirect.conf.template /etc/nginx/http.d/50_vhost_default.conf
 		sed -i -E \
@@ -128,13 +128,25 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 			fi
 			# Set certbot cert name to the first name encountered
 			CERTBOT_CERT_NAME=${CERTBOT_CERT_NAME:-$server_name}
+
+			# Add server names
 			sed -i -E \
 				-e "s/^(\tserver_name @SERVER_NAME@;)/\tserver_name $server_name;\n\1/" \
 				-e "s/@CERTBOT_CERT_NAME@/$CERTBOT_CERT_NAME/" \
 				/etc/nginx/http.d/55_vhost_default-ssl.conf.new
+			# Remove template line
+			sed -i -E \
+				-e "/server_name @SERVER_NAME@;/d" \
+				/etc/nginx/http.d/55_vhost_default-ssl.conf.new
+
+			# Add server names
 			sed -i -E \
 				-e "s/^(\tserver_name @SERVER_NAME@;)/\tserver_name $server_name;\n\1/" \
 				-e "s,/live/@CERTBOT_CERT_NAME@,/dummy/$CERTBOT_CERT_NAME," \
+				/etc/nginx/http.d/55_vhost_default-ssl.conf.dummy
+			# Remove template line
+			sed -i -E \
+				-e "/server_name @SERVER_NAME@;/d" \
 				/etc/nginx/http.d/55_vhost_default-ssl.conf.dummy
 		done
 
@@ -163,6 +175,7 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 			-addext "subjectAltName = $san_names"
 
 		# Try issue the certificate
+		fdc_notice "Using Certbot to issue initial certificate for '$CERTBOT_DOMAINS'"
 		if ! certbot --standalone \
 				certonly \
 				--agree-tos --keep --non-interactive  \
@@ -178,15 +191,16 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 	else
 
 		# Try renew certificate to make sure it covers the correct set of domains and is up to date
+		fdc_notice "Using Certbot to renewal certificate for '$CERTBOT_DOMAINS'"
 		if ! certbot --standalone \
-			certonly \
-			--agree-tos --keep --non-interactive  \
-			--email "${CERTBOT_EMAIL}" --no-eff-email \
-			--cert-name "${CERTBOT_CERT_NAME}" \
-			--renew-with-new-domains \
-			--keep-until-expiring \
-			--debug \
-			-d "$CERTBOT_DOMAINS"; then
+				certonly \
+				--agree-tos --keep --non-interactive  \
+				--email "${CERTBOT_EMAIL}" --no-eff-email \
+				--cert-name "${CERTBOT_CERT_NAME}" \
+				--renew-with-new-domains \
+				--keep-until-expiring \
+				--debug \
+				-d "$CERTBOT_DOMAINS"; then
 			fdc_error "Failed to renew certificate for '$CERTBOT_DOMAINS', ignoring and continuing with self-signed certificate"
 		fi
 	fi
@@ -196,8 +210,10 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 	#
 	if [ -e "/etc/letsencrypt/live/$CERTBOT_CERT_NAME/fullchain.pem" ] && \
 			[ -e "/etc/letsencrypt/live/$CERTBOT_CERT_NAME/privkey.pem" ]; then
+		fdc_notice "Enabling production SSL certificate"
 		cp /etc/nginx/http.d/55_vhost_default-ssl.conf.new /etc/nginx/http.d/55_vhost_default-ssl.conf
 	else
+		fdc_notice "No production SSL certificate, using dummy self-signed certificate"
 		cp /etc/nginx/http.d/55_vhost_default-ssl.conf.dummy /etc/nginx/http.d/55_vhost_default-ssl.conf
 	fi
 fi
