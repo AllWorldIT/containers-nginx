@@ -70,7 +70,6 @@ COPY etc/nginx/http.d/20_fdc_proxy_buffering.conf /etc/nginx/http.d/
 COPY etc/nginx/http.d/20_fdc_proxy_cache.conf /etc/nginx/http.d/
 COPY etc/nginx/http.d/20_fdc_ssl.conf /etc/nginx/http.d/
 COPY etc/nginx/http.d/50_vhost_default.conf.template /etc/nginx/http.d/
-COPY etc/nginx/http.d/50_vhost_default-redirect.conf.template /etc/nginx/http.d/
 COPY etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template /etc/nginx/http.d/
 COPY etc/supervisor/conf.d/nginx.conf /etc/supervisor/conf.d/nginx.conf
 COPY usr/local/sbin/run-certbot-renew /usr/local/sbin
@@ -93,7 +92,6 @@ RUN set -eux; \
 		/etc/nginx/http.d/20_fdc_proxy_cache.conf \
 		/etc/nginx/http.d/20_fdc_ssl.conf \
 		/etc/nginx/http.d/50_vhost_default.conf.template \
-		/etc/nginx/http.d/50_vhost_default-redirect.conf.template \
 		/etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template \
 		/usr/local/sbin/run-certbot-renew; \
 	chmod 0755 \
@@ -108,7 +106,6 @@ RUN set -eux; \
 		/etc/nginx/http.d/20_fdc_proxy_cache.conf \
 		/etc/nginx/http.d/20_fdc_ssl.conf \
 		/etc/nginx/http.d/50_vhost_default.conf.template \
-		/etc/nginx/http.d/50_vhost_default-redirect.conf.template \
 		/etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template; \
 	fdc set-perms
 
