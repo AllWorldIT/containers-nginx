@@ -21,7 +21,7 @@
 
 # If we have certbot configured, install a cronjob to renew the certs
 if [ -n "$CERTBOT_DOMAINS" ]; then
-    fdc_info "Installing Certbot crontab"
+    fdc_notice "Installing Certbot crontab"
     cat <<EOF > /etc/cron.d/nginx-certbot
 # min   hour    day     month   weekday   user      command
 0       0       *       *       *         root      /usr/local/sbin/run-certbot-renew
