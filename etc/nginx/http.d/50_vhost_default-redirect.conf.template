@@ -1,8 +1,0 @@
-server {
-	listen [::]:80 ipv6only=off default_server;
-	server_name _;
-
-	location / {
-		return @NGINX_HTTP_REDIRECT_CODE@ @NGINX_HTTP_REDIRECT_TARGET@;
-	}
-}
