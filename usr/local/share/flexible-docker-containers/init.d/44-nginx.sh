@@ -174,13 +174,17 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 			mkdir "/etc/letsencrypt/dummy/$CERTBOT_CERT_NAME"
 		fi
 
-		# Create keys
-		san_names=$(join_by , "${cert_san_names[@]}")
+		# Create self-signed certificate
+		openssl_args=()
+		if [ "${#cert_san_names[@]}" -gt 0 ]; then
+			san_names=$(join_by , "${cert_san_names[@]}")
+			openssl_args+=("-addext" "subjectAltName = $san_names")
+		fi
 		openssl req -new -x509 -days 365 -nodes \
 			-out "/etc/letsencrypt/dummy/$CERTBOT_CERT_NAME/fullchain.pem" \
 			-keyout "/etc/letsencrypt/dummy/$CERTBOT_CERT_NAME/privkey.pem" \
 			-subj "/CN=$cert_common_name" \
-			-addext "subjectAltName = $san_names"
+			"${openssl_args[@]}"
 
 		# Try issue the certificate
 		fdc_notice "Using Certbot to issue initial certificate for '$CERTBOT_DOMAINS'"
