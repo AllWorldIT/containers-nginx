@@ -120,6 +120,13 @@ fi
 if [ -n "$CERTBOT_DOMAINS" ]; then
 	fdc_info "Enabling LetsEncrypt"
 
+	# Make sure our lib directory exists with the right permissions
+	if [ ! -d /var/lib/letsencrypt ]; then
+		mkdir /var/lib/letsencrypt
+	fi
+	chown root:root /var/lib/letsencrypt
+	chmod 0755 /var/lib/letsencrypt
+
 	# Make sure the email addy is set
 	if [ -z "$CERTBOT_EMAIL" ]; then
 		fdc_error "Certbot 'CERTBOT_DOMAINS' was specified without 'CERTBOT_EMAIL'"
@@ -205,7 +212,7 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 
 	# Cert exists, try renew it just to make sure its valid
 	else
-		run_certbot=""
+		run_certbot="no"
 
 		# Check the domains match
 		if [ -e /var/lib/letsencrypt/fdc_domains ]; then
@@ -213,6 +220,8 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 			if [ "$domain_list_current" != "$CERTBOT_DOMAINS" ]; then
 				run_certbot=yes
 			fi
+		else
+			run_certbot=yes
 		fi
 		# Next check the last time we did a renew
 		if [ -e /var/lib/letsencrypt/fdc_lastcheck ]; then
@@ -221,6 +230,8 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 			if [ "$((now - le_last_check))" -gt "$((86400 * 30))" ]; then
 				run_certbot=yes
 			fi
+		else
+			run_certbot=yes
 		fi
 
 		# Finally if we need to run certbot do it...
