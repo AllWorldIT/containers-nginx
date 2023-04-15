@@ -118,45 +118,47 @@ fi
 #
 
 if [ -n "$CERTBOT_DOMAINS" ]; then
-		# Make sure the email addy is set
-		if [ -z "$CERTBOT_EMAIL" ]; then
-			fdc_error "Certbot 'CERTBOT_DOMAINS' was specified without 'CERTBOT_EMAIL'"
-			false
+	fdc_info "Enabling LetsEncrypt"
+
+	# Make sure the email addy is set
+	if [ -z "$CERTBOT_EMAIL" ]; then
+		fdc_error "Certbot 'CERTBOT_DOMAINS' was specified without 'CERTBOT_EMAIL'"
+		false
+	fi
+
+	cert_common_name=""
+	cert_san_names=()
+
+	cp /etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template /etc/nginx/http.d/55_vhost_default-ssl.conf.dummy
+	cp /etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template /etc/nginx/http.d/55_vhost_default-ssl.conf.new
+	for server_name in $(echo "$CERTBOT_DOMAINS" | tr "," " "); do
+		# Check if we're adding the first cert name or if we're adding additional SAN names
+		if [ -z "$cert_common_name" ]; then
+			cert_common_name="$server_name"
+		else
+			cert_san_names+=("DNS:$server_name")
 		fi
+		# Set certbot cert name to the first name encountered
+		CERTBOT_CERT_NAME=${CERTBOT_CERT_NAME:-$server_name}
 
-		cert_common_name=""
-		cert_san_names=()
-
-		cp /etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template /etc/nginx/http.d/55_vhost_default-ssl.conf.dummy
-		cp /etc/nginx/http.d/55_vhost_default-ssl-certbot.conf.template /etc/nginx/http.d/55_vhost_default-ssl.conf.new
-		for server_name in $(echo "$CERTBOT_DOMAINS" | tr "," " "); do
-			# Check if we're adding the first cert name or if we're adding additional SAN names
-			if [ -z "$cert_common_name" ]; then
-				cert_common_name="$server_name"
-			else
-				cert_san_names+=("DNS:$server_name")
-			fi
-			# Set certbot cert name to the first name encountered
-			CERTBOT_CERT_NAME=${CERTBOT_CERT_NAME:-$server_name}
-
-			# Add server names
-			sed -i -E \
-				-e "s/^(\tserver_name @SERVER_NAME@;)/\tserver_name $server_name;\n\1/" \
-				-e "s/@CERTBOT_CERT_NAME@/$CERTBOT_CERT_NAME/" \
-				/etc/nginx/http.d/55_vhost_default-ssl.conf.new
-
-			# Add server names
-			sed -i -E \
-				-e "s/^(\tserver_name @SERVER_NAME@;)/\tserver_name $server_name;\n\1/" \
-				-e "s,/live/@CERTBOT_CERT_NAME@,/dummy/$CERTBOT_CERT_NAME," \
-				/etc/nginx/http.d/55_vhost_default-ssl.conf.dummy
-		done
-
-		# Remove template lines
+		# Add server names
 		sed -i -E \
-			-e "/server_name @SERVER_NAME@;/d" \
-			/etc/nginx/http.d/55_vhost_default-ssl.conf.new \
+			-e "s/^(\tserver_name @SERVER_NAME@;)/\tserver_name $server_name;\n\1/" \
+			-e "s/@CERTBOT_CERT_NAME@/$CERTBOT_CERT_NAME/" \
+			/etc/nginx/http.d/55_vhost_default-ssl.conf.new
+
+		# Add server names
+		sed -i -E \
+			-e "s/^(\tserver_name @SERVER_NAME@;)/\tserver_name $server_name;\n\1/" \
+			-e "s,/live/@CERTBOT_CERT_NAME@,/dummy/$CERTBOT_CERT_NAME," \
 			/etc/nginx/http.d/55_vhost_default-ssl.conf.dummy
+	done
+
+	# Remove template lines
+	sed -i -E \
+		-e "/server_name @SERVER_NAME@;/d" \
+		/etc/nginx/http.d/55_vhost_default-ssl.conf.new \
+		/etc/nginx/http.d/55_vhost_default-ssl.conf.dummy
 
 	#
 	# Step 2 - Check if we can activate SSL right now
@@ -164,6 +166,8 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 
 	if [ ! -e "/etc/letsencrypt/live/$CERTBOT_CERT_NAME/fullchain.pem" ] || \
 			[ ! -e "/etc/letsencrypt/live/$CERTBOT_CERT_NAME/privkey.pem" ]; then
+
+		fdc_info "Generating dummy self-signed fallback SSL certificate"
 
 		# Make sure dummy cert dirs exists
 		if [ ! -d "/etc/letsencrypt/dummy" ]; then
@@ -201,19 +205,42 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 
 	# Cert exists, try renew it just to make sure its valid
 	else
+		run_certbot=""
 
-		# Try renew certificate to make sure it covers the correct set of domains and is up to date
-		fdc_notice "Using Certbot to renewal certificate for '$CERTBOT_DOMAINS'"
-		if ! certbot --standalone \
-				certonly \
-				--agree-tos --keep --non-interactive  \
-				--email "${CERTBOT_EMAIL}" --no-eff-email \
-				--cert-name "${CERTBOT_CERT_NAME}" \
-				--renew-with-new-domains \
-				--keep-until-expiring \
-				--debug \
-				-d "$CERTBOT_DOMAINS"; then
-			fdc_error "Failed to renew certificate for '$CERTBOT_DOMAINS', ignoring and continuing with self-signed certificate"
+		# Check the domains match
+		if [ -e /var/lib/letsencrypt/fdc_domains ]; then
+			domain_list_current=$(cat /var/lib/letsencrypt/domains)
+			if [ "$domain_list_current" != "$CERTBOT_DOMAINS" ]; then
+				run_certbot=yes
+			fi
+		fi
+		# Next check the last time we did a renew
+		if [ -e /var/lib/letsencrypt/fdc_lastcheck ]; then
+			le_last_check=$(cat /var/lib/letsencrypt/fdc_lastcheck)
+			now=$(date +%s)
+			if [ "$((now - le_last_check))" -gt "$((86400 * 30))" ]; then
+				run_certbot=yes
+			fi
+		fi
+
+		# Finally if we need to run certbot do it...
+		if [ "$run_certbot" = "yes" ]; then
+			# Try renew certificate to make sure it covers the correct set of domains and is up to date
+			fdc_notice "Using Certbot to renewal certificate for '$CERTBOT_DOMAINS'"
+			if ! certbot --standalone \
+					certonly \
+					--agree-tos --keep --non-interactive  \
+					--email "${CERTBOT_EMAIL}" --no-eff-email \
+					--cert-name "${CERTBOT_CERT_NAME}" \
+					--renew-with-new-domains \
+					--keep-until-expiring \
+					--debug \
+					-d "$CERTBOT_DOMAINS"; then
+				fdc_error "Failed to renew certificate for '$CERTBOT_DOMAINS', ignoring and continuing with self-signed certificate"
+			fi
+			# Save domain list and current timestamp
+			echo "$CERTBOT_DOMAINS" > /var/lib/letsencrypt/fdc_domains
+			date +%s > /var/lib/letsencrypt/fdc_lastcheck
 		fi
 	fi
 

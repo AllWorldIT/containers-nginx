@@ -155,8 +155,17 @@ Diffie-Huffman parameters are written to this directory if SSL is enabled.
 
 ## /etc/letsencrypt
 
-Lets Encrypt configuration is stored in this directory if `CERTBOT_DOMAINS` is set.
+LetsEncrypt configuration is stored in this directory if `CERTBOT_DOMAINS` is set.
 
+
+## /var/lib/letsencrypt
+
+LetsEncrypt data.
+
+
+## /var/log/letsencrypt
+
+LetsEncrypt logs.
 
 
 # Exposed Ports
