@@ -19,14 +19,14 @@
 # IN THE SOFTWARE.
 
 
-FROM registry.conarx.tech/containers/postfix/edge
+FROM registry.conarx.tech/containers/postfix/3.18
 
 
 ARG VERSION_INFO=
 
 LABEL org.opencontainers.image.authors   "Nigel Kukard <nkukard@conarx.tech>"
-LABEL org.opencontainers.image.version   "edge"
-LABEL org.opencontainers.image.base.name "registry.conarx.tech/containers/postfix/edge"
+LABEL org.opencontainers.image.version   "3.18"
+LABEL org.opencontainers.image.base.name "registry.conarx.tech/containers/postfix/3.18"
 
 
 
