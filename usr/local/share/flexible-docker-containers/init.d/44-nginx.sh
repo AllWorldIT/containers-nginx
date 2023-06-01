@@ -216,7 +216,7 @@ if [ -n "$CERTBOT_DOMAINS" ]; then
 
 		# Check the domains match
 		if [ -e /var/lib/letsencrypt/fdc_domains ]; then
-			domain_list_current=$(cat /var/lib/letsencrypt/domains)
+			domain_list_current=$(cat /var/lib/letsencrypt/fdc_domains)
 			if [ "$domain_list_current" != "$CERTBOT_DOMAINS" ]; then
 				run_certbot=yes
 			fi
