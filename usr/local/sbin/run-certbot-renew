@@ -23,7 +23,10 @@ delay=$(( RANDOM % 43200 ))
 
 echo "Certbot: Waiting ${delay}s to renew"
 
-/usr/bin/certbot --non-interactive --debug --nginx renew
+# NK: we don't get any PATH in this environment, so we need to set it ourselves
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+certbot --non-interactive --debug --nginx renew
 res=$?
 
 if [ "$res" = "0" ]; then
